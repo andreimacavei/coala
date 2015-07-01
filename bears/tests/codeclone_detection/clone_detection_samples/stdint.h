@@ -19,10 +19,27 @@
 #ifndef _STDINT_H
 #define _STDINT_H
 
-#include <settings.h>
+// Error enum
+enum
+{
+	SUCCESS = 0,
+	NOT_IMPLEMENTED,
+	UNSUPPORTED_ARCH,
+	ERANGE,
+	OBJECT_PRESENT,
+	ERR_IN_SUBFUNC,
+	MAX_ERRNO
+};
 
 //in addition to posix
 typedef unsigned char		bool;
+#define true  1
+#define TRUE  1
+#define false 0
+#define FALSE 0
+
+typedef uint8_t uerr_t
+typedef int8_t  err_t
 
 typedef signed char			int8_t;
 typedef unsigned char		uint8_t;
