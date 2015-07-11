@@ -17,7 +17,7 @@ def exclude_function(count_matrix):
                          variables for a function.
     :return:             True if the function is useless for evaluation.
     """
-    return all(sum(cv.unweighted) < 10 for cv in count_matrix.values())
+    return sum(sum(cv.unweighted) for cv in count_matrix.values()) < 15
 
 
 def get_count_matrices(count_vector_creator,
