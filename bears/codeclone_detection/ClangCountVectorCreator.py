@@ -96,7 +96,9 @@ class ClangCountVectorCreator:
             file = file.name.decode()
 
         if str(file) == str(filename) and is_function_declaration(cursor):
+            print("got function", get_identifier_name(cursor))
             self._get_vector_for_function(cursor)
+            print("Got vector for it.")
 
             result = {(cursor.extent.start.line,
                        get_identifier_name(cursor)): self.count_vectors}
@@ -122,6 +124,10 @@ class ClangCountVectorCreator:
                          in all functions.
         """
         args = ["-I"+path for path in include_paths]
+        print("PARSING", filename)
         root = Index.create().parse(filename, args=args).cursor
+        print("Parsed. Getting CVs...")
 
-        return self._get_vectors_for_cursor(root, filename)
+        retval = self._get_vectors_for_cursor(root, filename)
+        print("Got CVs.")
+        return retval

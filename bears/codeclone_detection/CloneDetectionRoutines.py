@@ -56,7 +56,7 @@ def get_count_matrices(count_vector_creator,
     include_paths = collect_dirs([os.path.dirname(base_path) + "/**"])
 
     for i, filename in enumerate(filenames):
-        progress_callback(100*(i/maxlen))
+        progress_callback(100*(i/maxlen), filename)
         count_dict = count_vector_creator.get_vectors_for_file(filename,
                                                                include_paths)
         for function in count_dict:

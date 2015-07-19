@@ -118,7 +118,8 @@ class ClangFunctionDifferenceBear(GlobalBear):
             ClangCountVectorCreator(list(counting_conditions.keys()),
                                     list(counting_conditions.values())),
             list(self.file_dict.keys()),
-            lambda prog: self.debug("{:2.4f}%...".format(prog)),
+            lambda prog, file: self.debug("Analyzing file {}, "
+                                          "{:2.4f}%...".format(file, prog)),
             self.section["files"].origin)
 
         self.debug("Calculating differences...")
