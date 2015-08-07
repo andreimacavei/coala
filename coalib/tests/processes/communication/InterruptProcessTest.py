@@ -1,10 +1,12 @@
-import unittest
+import multiprocessing
+import platform
 import sys
 import time
-import multiprocessing
+import unittest
 
 sys.path.insert(0, ".")
 from coalib.processes.communication.InterruptProcess import interrupt_process
+from coalib.processes.Processing import create_process_group
 
 
 def runner(queue):
@@ -53,4 +55,15 @@ class InterruptProcessTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main(verbosity=2)
+    if platform.system() == "Windows":
+        if len(sys.argv) > 1 and sys.argv[1] == "ActivateTestProcess":
+            sys.argv = [sys.argv[0]] + sys.argv[2:]
+            unittest.main(verbosity=2)
+        else:
+            proc = create_process_group((sys.executable,
+                                         __file__,
+                                         "ActivateTestProcess")
+                                         + tuple(sys.argv[2:]))
+            proc.wait()
+    else:
+        unittest.main(verbosity=2)
