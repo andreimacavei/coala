@@ -1,6 +1,11 @@
 import os
+import platform
 
+from coalib.misc import Enum
 from coalib.misc.i18n import _
+
+
+OPERATING_SYSTEMS = Enum("LINUX", "DARWIN", "WINDOWS")
 
 
 class Constants:
@@ -65,3 +70,7 @@ class Constants:
         VERSION = ver.readline().strip()
 
     BUS_NAME = "org.coala_analyzer.v1"
+
+    OPERATING_SYSTEM = OPERATING_SYSTEMS.str_dict.get(
+        platform.system().upper(),
+        "LINUX")
