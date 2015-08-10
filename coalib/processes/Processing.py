@@ -2,6 +2,7 @@ import multiprocessing
 import queue
 import os
 import platform
+import signal
 import subprocess
 
 from coalib.collecting.Collectors import collect_files
@@ -151,8 +152,9 @@ def instantiate_processes(section,
     :param job_count:        Max number of processes to create.
     :param log_printer:      The log printer to warn to.
     :return:                 A tuple containing a list of processes,
-                             and the arguments passed to each process which are
-                             the same for each object.
+                             the arguments passed to each process which are the
+                             same for each object and the cancel-event object
+                             that allows to cancel all bears gracefully.
     """
     filename_list = collect_files(path_list(section.get('files', "")))
     file_dict = get_file_dict(filename_list, log_printer)
@@ -164,6 +166,7 @@ def instantiate_processes(section,
     global_result_dict = manager.dict()
     message_queue = multiprocessing.Queue()
     control_queue = multiprocessing.Queue()
+    cancel_event = multiprocessing.Event()
 
     bear_runner_args = {"file_name_queue": filename_queue,
                         "local_bear_list": local_bear_list,
@@ -174,6 +177,7 @@ def instantiate_processes(section,
                         "global_result_dict": global_result_dict,
                         "message_queue": message_queue,
                         "control_queue": control_queue,
+                        "cancel_event": cancel_event,
                         "timeout": 0.1}
 
     instantiate_bears(section,
@@ -186,7 +190,8 @@ def instantiate_processes(section,
 
     return ([multiprocessing.Process(target=run, kwargs=bear_runner_args)
              for i in range(job_count)],
-            bear_runner_args)
+            bear_runner_args,
+            cancel_event)
 
 
 def process_queues(processes,
@@ -320,19 +325,28 @@ def execute_section(section,
     global_bear_list = Dependencies.resolve(global_bear_list)
 
     running_processes = get_cpu_count()
-    processes, arg_dict = instantiate_processes(section,
-                                                local_bear_list,
-                                                global_bear_list,
-                                                running_processes,
-                                                log_printer)
+    processes, arg_dict, cancel_event = instantiate_processes(
+        section,
+        local_bear_list,
+        global_bear_list,
+        running_processes,
+        log_printer)
 
     logger_thread = LogPrinterThread(arg_dict["message_queue"],
                                      log_printer)
     # Start and join the logger thread along with the processes to run bears
     processes.append(logger_thread)
 
+    # Ignore SIGINT until the processes are spawned. If we ignore them in the
+    # main process, the started processes inherit the handler.
+    default_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
+
     for runner in processes:
         runner.start()
+
+    # Restore the handler again so the main process can react on CTRL+C
+    # interrupt.
+    signal.signal(signal.SIGINT, default_handler)
 
     try:
         return (process_queues(processes,
@@ -347,6 +361,10 @@ def execute_section(section,
                 arg_dict["local_result_dict"],
                 arg_dict["global_result_dict"],
                 arg_dict["file_dict"])
+    except KeyboardInterrupt:
+        # TODO localization!!!
+        log_printer.warn("User pressed CTRL+C, interrupting now.")
+        cancel_event.set()
     finally:
         logger_thread.running = False
 
