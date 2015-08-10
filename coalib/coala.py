@@ -9,7 +9,7 @@
 # for more details.
 #
 # You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 from coalib.output.ConsoleInteraction import (nothing_done,
                                               acquire_settings,
@@ -49,6 +49,8 @@ def main():
 
                 file_diff_dict = {}
                 print_section_beginning(console_printer, section)
+                # TODO REMOVE
+                print("execute_section")
                 results = execute_section(
                     section=section,
                     global_bear_list=global_bears[section_name],

@@ -295,7 +295,8 @@ def execute_section(section,
                     local_bear_list,
                     print_results,
                     log_printer,
-                    file_diff_dict):
+                    file_diff_dict,
+                    cancel_event=None):
     """
     Executes the section with the given bears.
 
@@ -315,12 +316,19 @@ def execute_section(section,
     :param log_printer:      The log_printer to warn to.
     :param file_diff_dict:   A dictionary that contains filenames as keys and
                              diff objects as values.
+    :param cancel_event:     A multiprocessing.Event object to use for
+                             cancellation control. Pass one if you need to
+                             cancel this function gracefully (due to user input
+                             etc.). Supplying None is allowed (then you don't
+                             have control over cancellation).
     :return:                 Tuple containing a bool (True if results were
                              yielded, False otherwise), a Manager.dict
                              containing all local results(filenames are key)
                              and a Manager.dict containing all global bear
                              results (bear names are key).
     """
+    cancel_event = cancel_event or multiprocessing.Event()
+
     local_bear_list = Dependencies.resolve(local_bear_list)
     global_bear_list = Dependencies.resolve(global_bear_list)
 
