@@ -116,6 +116,7 @@ class BearRunningUnitTest(unittest.TestCase):
         self.global_result_dict = manager.dict()
         self.message_queue = queue.Queue()
         self.control_queue = queue.Queue()
+        self.cancel_event = multiprocessing.Event()
 
     def test_queue_done_marking(self):
         self.message_queue.put("test")
@@ -160,7 +161,8 @@ class BearRunningUnitTest(unittest.TestCase):
             self.local_result_dict,
             self.global_result_dict,
             self.message_queue,
-            self.control_queue)
+            self.control_queue,
+            self.cancel_event)
 
         try:
             while True:
@@ -183,7 +185,8 @@ class BearRunningUnitTest(unittest.TestCase):
             self.local_result_dict,
             self.global_result_dict,
             self.message_queue,
-            self.control_queue)
+            self.control_queue,
+            self.cancel_event)
 
     def test_strange_bear(self):
         self.local_bear_list.append(UnexpectedBear1(self.settings,
@@ -201,7 +204,8 @@ class BearRunningUnitTest(unittest.TestCase):
             self.local_result_dict,
             self.global_result_dict,
             self.message_queue,
-            self.control_queue)
+            self.control_queue,
+            self.cancel_event)
 
         expected_messages = [LOG_LEVEL.DEBUG,
                              LOG_LEVEL.ERROR,
@@ -234,6 +238,7 @@ d
         self.global_result_dict = manager.dict()
         self.message_queue = queue.Queue()
         self.control_queue = queue.Queue()
+        self.cancel_event = multiprocessing.Event()
 
         self.file1 = "file1"
         self.file2 = "arbitrary"
@@ -262,7 +267,8 @@ d
             self.local_result_dict,
             self.global_result_dict,
             self.message_queue,
-            self.control_queue)
+            self.control_queue,
+            self.cancel_event)
 
         expected_messages = [LOG_LEVEL.DEBUG,
                              LOG_LEVEL.WARNING,
