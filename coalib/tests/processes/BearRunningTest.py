@@ -109,7 +109,7 @@ class LockingBear(LocalBear):
         self._lock_event = lock_event
         self.was_executed = False
 
-    def run(self, filename, file):
+    def execute(self, *args, **kwargs):
         print("WAITING")
         self._lock_event.wait()
         self.was_executed = True
@@ -132,14 +132,14 @@ class BearRunningUnitTest(unittest.TestCase):
         self.control_queue = queue.Queue()
         self.cancel_event = multiprocessing.Event()
 
-    def test_queue_done_marking(self):
+    def atest_queue_done_marking(self):
         self.message_queue.put("test")
         task_done(self.message_queue)  # Should make the queue joinable
         self.message_queue.join()
 
         task_done("test")  # Should pass silently
 
-    def test_messaging(self):
+    def atest_messaging(self):
         send_msg(self.message_queue,
                  0,
                  LOG_LEVEL.DEBUG,
@@ -151,7 +151,7 @@ class BearRunningUnitTest(unittest.TestCase):
         self.assertEqual(self.message_queue.get(),
                          LogMessage(LOG_LEVEL.DEBUG, "test-message"))
 
-    def test_dependencies(self):
+    def atest_dependencies(self):
         self.local_bear_list.append(SimpleBear(self.settings,
                                                self.message_queue))
         self.local_bear_list.append(DependentBear(self.settings,
@@ -185,7 +185,7 @@ class BearRunningUnitTest(unittest.TestCase):
         except queue.Empty:
             pass
 
-    def test_evil_bear(self):
+    def atest_evil_bear(self):
         self.local_bear_list.append(EvilBear(self.settings,
                                              self.message_queue))
         self.file_name_queue.put("t")
@@ -202,7 +202,7 @@ class BearRunningUnitTest(unittest.TestCase):
             self.control_queue,
             self.cancel_event)
 
-    def test_strange_bear(self):
+    def atest_strange_bear(self):
         self.local_bear_list.append(UnexpectedBear1(self.settings,
                                                     self.message_queue))
         self.local_bear_list.append(UnexpectedBear2(self.settings,
@@ -235,6 +235,9 @@ class BearRunningUnitTest(unittest.TestCase):
         lock_event = multiprocessing.Event()
         local_bear_list = [LockingBear(lock_event)
                            for i in range(get_cpu_count() + 1)]
+        for elem in range(get_cpu_count() + 1):
+            print("QUEUE UP", elem)
+            self.file_name_queue.put(str(elem))
 
         print("Creating thread")
         thread = threading.Thread(
@@ -249,8 +252,6 @@ class BearRunningUnitTest(unittest.TestCase):
                   self.message_queue,
                   self.control_queue,
                   multiprocessing.Event()))
-        for elem in range(get_cpu_count() + 1):
-            self.file_name_queue.put(str(elem))
 
         thread.start()
         print("Thread started")
@@ -292,7 +293,7 @@ class BearRunningUnitTest(unittest.TestCase):
         executed_bears = sum(1 if bear.was_executed else 0 for bear in local_bear_list)
         unexecuted_bears = sum(1 if not bear.was_executed else 0 for bear in local_bear_list)
 
-        self.assertEqual(executed_bears, get_cpu_count)
+        self.assertEqual(executed_bears, get_cpu_count())
         self.assertEqual(unexecuted_bears, 1)
 
 
@@ -336,7 +337,7 @@ d
         self.global_bear_queue.put(0)
         self.global_bear_queue.put(1)
 
-    def test_run(self):
+    def atest_run(self):
         run(self.file_name_queue,
             self.local_bear_list,
             self.global_bear_list,

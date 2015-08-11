@@ -218,7 +218,7 @@ def run_local_bear(message_queue,
     kwargs = {"dependency_results":
                   get_local_dependency_results(local_result_list,
                                                bear_instance)}
-    print("running bear")
+    print("running bear", bear_instance.__class__.__name__)
     return run_bear(message_queue,
                     timeout,
                     bear_instance,
@@ -447,7 +447,10 @@ def run_local_bears(filename_queue,
                                     filename)
             task_done(filename_queue)
     except queue.Empty:
+        print("QUEUE EMPTY")
         return
+
+    print("CANCELLED")
 
 
 def run_global_bears(message_queue,
