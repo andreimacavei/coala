@@ -205,6 +205,7 @@ def run_local_bear(message_queue,
     """
     if (not isinstance(bear_instance, LocalBear) or
             bear_instance.kind() != BEAR_KIND.LOCAL):
+        print("Check fail")
         send_msg(message_queue,
                  timeout,
                  LOG_LEVEL.WARNING,
@@ -217,6 +218,7 @@ def run_local_bear(message_queue,
     kwargs = {"dependency_results":
                   get_local_dependency_results(local_result_list,
                                                bear_instance)}
+    print("running bear")
     return run_bear(message_queue,
                     timeout,
                     bear_instance,
@@ -431,8 +433,11 @@ def run_local_bears(filename_queue,
                               cancellation status.
     """
     try:
+        print("EVENT SET: " + str(cancel_event.is_set()))
         while not cancel_event.is_set():
+            print("Inside poll loop")
             filename = filename_queue.get(timeout=timeout)
+            print("Fetched " + filename)
             run_local_bears_on_file(message_queue,
                                     timeout,
                                     file_dict,
